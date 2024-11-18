@@ -6,6 +6,6 @@ import org.br.mineradora.entity.QuotationEntity;
 
 @ApplicationScoped
 public class QuotationRepository implements PanacheRepository<QuotationEntity> {
-    // This will provide methods like `findAll()`, `persist()`, etc.
+
 }
 
