@@ -24,4 +24,7 @@ public class USDBRL {
     public String timestamp;
     public String create_date;
 
+    public String getBid() {
+        return bid; // Add if missing
+    }
 }

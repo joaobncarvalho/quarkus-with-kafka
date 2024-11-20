@@ -12,7 +12,11 @@ import lombok.extern.jackson.Jacksonized;
 @AllArgsConstructor
 public class CurrencyPriceDTO {
 
-    public USDBRL USDBRL;
+    private USDBRL usdbrl;
+
+    public USDBRL getUSDBRL() {
+        return usdbrl; // Add if missing
+    }
 
 
 }
