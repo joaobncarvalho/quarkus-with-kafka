@@ -2,6 +2,7 @@ package org.br.mineradora.dto;
 
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,10 +18,7 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 public class QuotationDTO {
-
     private Date date;
-
     private BigDecimal currencyPrice;
-
-
 }
+

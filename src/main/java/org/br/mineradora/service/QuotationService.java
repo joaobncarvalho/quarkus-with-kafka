@@ -14,15 +14,15 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 public class QuotationService {
 
-    @Inject
     @RestClient
+    @Inject
     CurrencyPriceClient currencyPriceClient;
-
 
     @Inject
     QuotationRepository quotationRepository;
@@ -30,52 +30,81 @@ public class QuotationService {
     @Inject
     KafkaEvents kafkaEvents;
 
-    public void getCurrencyPrice() {
-        CurrencyPriceDTO currencyPriceInfo = currencyPriceClient.getPriceByPair("USD-BRL");
+    private static final Logger LOG = LoggerFactory.getLogger(QuotationService.class);
 
-        if (updateCurrentInfoPrice(currencyPriceInfo)) {
-            kafkaEvents.sendNewKafkaEvent(
-                    QuotationDTO.builder()
-                            .currencyPrice(new BigDecimal(currencyPriceInfo.getUSDBRL().getBid()))
-                            .date(new Date())
-                            .build()
-            );
+    public void sendTestMessage() {
+        QuotationDTO quotationDTO = QuotationDTO.builder()
+                .date(new Date())
+                .currencyPrice(BigDecimal.valueOf(123.45))
+                .build();
+
+        kafkaEvents.sendNewKafkaEvent(quotationDTO);
+    }
+
+    public void processCurrencyPrice() {
+        List<CurrencyPriceDTO> currencyPriceInfoList = currencyPriceClient.getPriceByCurrency();
+        LOG.info("Raw response from CurrencyPriceClient: {}", currencyPriceInfoList);
+
+        if (currencyPriceInfoList != null && !currencyPriceInfoList.isEmpty()) {
+            CurrencyPriceDTO currencyPriceInfo = currencyPriceInfoList.getFirst();
+            LOG.info("Processing first entry: {}", currencyPriceInfo);
+
+            if (currencyPriceInfo.getUSDBRL() != null && updateCurrentInfoPrice(currencyPriceInfo)) {
+                kafkaEvents.sendNewKafkaEvent(
+                        QuotationDTO.builder()
+                                .currencyPrice(new BigDecimal(currencyPriceInfo.getUSDBRL().getBid()))
+                                .date(new Date())
+                                .build()
+                );
+                LOG.info("Message sent to Kafka for currency price: {}", currencyPriceInfo.getUSDBRL());
+            } else {
+                LOG.warn("Bid is null or updateCurrentInfoPrice returned false.");
+            }
+        } else {
+            LOG.error("CurrencyPriceInfo list is empty or null. Cannot process currency price.");
         }
     }
 
-   private boolean updateCurrentInfoPrice(CurrencyPriceDTO currencyPriceInfo) {
+
+
+
+    private boolean updateCurrentInfoPrice(CurrencyPriceDTO currencyPriceInfo) {
+        // Retrieve the bid as a BigDecimal
         BigDecimal currentPrice = new BigDecimal(currencyPriceInfo.getUSDBRL().getBid());
         AtomicBoolean updatePrice = new AtomicBoolean(false);
 
+        // Retrieve the existing quotations
         List<QuotationEntity> quotationList = quotationRepository.findAll().list();
 
-        quotationList.forEach(item->{
-
-        });
-
         if (quotationList.isEmpty()) {
+            // Save the new quotation if there are no existing ones
             saveQuotation(currencyPriceInfo);
             updatePrice.set(true);
         } else {
-            QuotationEntity lastDollarPrice = quotationList.get(quotationList.size() - 1);
-
-            if (currentPrice.compareTo(lastDollarPrice.getCurrencyPrice()) > 0) {
-                updatePrice.set(true);
+            // Check if the price has changed
+            QuotationEntity latestQuotation = quotationList.get(0);
+            if (latestQuotation.getCurrencyPrice().compareTo(currentPrice) != 0) {
                 saveQuotation(currencyPriceInfo);
+                updatePrice.set(true);
             }
         }
-
         return updatePrice.get();
     }
+
+
 
     private void saveQuotation(CurrencyPriceDTO currencyInfo) {
         QuotationEntity quotation = new QuotationEntity();
 
+        // Set the fields for the new quotation
         quotation.setDate(new Date());
         quotation.setCurrencyPrice(new BigDecimal(currencyInfo.getUSDBRL().getBid()));
         quotation.setPctChange(currencyInfo.getUSDBRL().getPctChange());
         quotation.setPair("USD-BRL");
 
+        // Persist the new quotation
         quotationRepository.persist(quotation);
     }
+
+
 }

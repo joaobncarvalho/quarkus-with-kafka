@@ -28,34 +28,49 @@ services:
     depends_on:
       - postgres
 
-  # Kafka Zookeeper Service
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    container_name: zookeeper
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-      ZOOKEEPER_TICK_TIME: 2000
-    networks:
-      quarkus-net:
-        ipv4_address: 172.30.0.4
-
-  # Kafka Service
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: "bitnami/kafka:3.8"
     container_name: kafka
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    ports:
-      - "9092:9092"
+    hostname: kafka-1 # Match the advertised listeners hostname
     networks:
       quarkus-net:
         ipv4_address: 172.30.0.5
-    depends_on:
-      - zookeeper
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=kraft:PLAINTEXT,CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=1
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@172.30.0.5:9094 # Use IP or hostname matching the network
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_KRAFT_CLUSTER_ID=MkU3OEVBNTcwNTJENDM2Qk
+      - KAFKA_CFG_KRAFT_REPLICATION_FACTOR=1
+      - KAFKA_CFG_ADVERTISED_LISTENERS=kraft://172.30.0.5:9093,INTERNAL://172.30.0.5:9092,EXTERNAL://localhost:9502
+      - KAFKA_CFG_LISTENERS=kraft://:9093,CONTROLLER://:9094,INTERNAL://:9092,EXTERNAL://:9502
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=INTERNAL
+      - KAFKA_CFG_DEFAULT_REPLICATION_FACTOR=1
+    ports:
+      - "9101:9092"  # Internal listener
+      - "9502:9093"  # External listener for KRaft (external access)
+      - "9103:9094"  # Controller listener
 
+  # Kafka UI Service
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    networks:
+      quarkus-net:
+        ipv4_address: 172.30.0.6
+    ports:
+      - "9093:8080" # Fixed port mapping for Kafka UI
+    restart: always
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=trading-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=172.30.0.5:9092
+    depends_on:
+      - kafka
 
 networks:
   quarkus-net:
