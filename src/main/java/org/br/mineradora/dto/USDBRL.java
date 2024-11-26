@@ -5,24 +5,24 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 
+@Jacksonized
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 public class USDBRL {
-    private String code;
-    private String codein;
-    private String name;
-    private String high;
-    private String low;
-    private String varBid;
-    private String pctChange;
 
-    @JsonProperty("bid")
-    private String bid; // This must map to the API's "bid" field.
+    public String code;
+    public String codein;
+    public String name;
+    public String high;
+    public String low;
+    public String varBid;
+    public String pctChange;
+    public String bid;
+    public String ask;
+    public String timestamp;
+    public String create_date;
 
-    private String ask;
-    private String timestamp;
-    private String create_date;
 }

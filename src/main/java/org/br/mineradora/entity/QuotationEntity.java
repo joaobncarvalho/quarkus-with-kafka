@@ -12,24 +12,20 @@ import java.util.Date;
 @Table(name="quotation")
 @Data
 @NoArgsConstructor
-
 public class QuotationEntity {
 
     @Id
     @GeneratedValue
     private Long id;
 
-
     private Date date;
 
-    @Column(name = "currency_Price")
+    @Column(name="currency_price")
     private BigDecimal currencyPrice;
 
-    @Column(name = "pct_Change")
+    @Column(name="pct_change")
     private String pctChange;
 
     private String pair;
-
-
 
 }

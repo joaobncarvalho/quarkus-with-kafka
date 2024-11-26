@@ -18,7 +18,10 @@ import java.util.Date;
 @Builder
 @AllArgsConstructor
 public class QuotationDTO {
+
     private Date date;
+
     private BigDecimal currencyPrice;
+
 }
 
