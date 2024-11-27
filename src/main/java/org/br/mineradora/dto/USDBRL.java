@@ -1,28 +1,27 @@
 package org.br.mineradora.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.jackson.Jacksonized;
 
-@Jacksonized
+
 @Data
 @Builder
 @AllArgsConstructor
+@Jacksonized
+
 public class USDBRL {
-
-    public String code;
-    public String codein;
-    public String name;
-    public String high;
-    public String low;
-    public String varBid;
-    public String pctChange;
-    public String bid;
-    public String ask;
-    public String timestamp;
-    public String create_date;
-
+    private String code;
+    private String codein;
+    private String name;
+    private String high;
+    private String low;
+    private String varBid;
+    private String pctChange;
+    private String bid;
+    private String ask;
+    private String timestamp;
+    private String create_date;
 }
