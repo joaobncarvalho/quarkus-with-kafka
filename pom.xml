@@ -26,11 +26,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <dependency>
-                <groupId>javax.ws.rs</groupId>
-                <artifactId>javax.ws.rs-api</artifactId>
-                <version>2.0</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -38,20 +33,24 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client</artifactId>
-            <version>3.15.1</version>
         </dependency>
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-jackson</artifactId>
-            <version>3.15.1</version>
         </dependency>
-
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.34</version> <!-- Use the latest version -->
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0</version>
+        </dependency>
+
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-quartz</artifactId>
@@ -59,9 +58,9 @@
 
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-messaging-kafka</artifactId>
+            <artifactId>quarkus-smallrye-reactive-messaging-kafka</artifactId>
+            <version>3.13.0</version>
         </dependency>
-
 
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -141,21 +140,19 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>io.quarkus</groupId>
-                        <artifactId>quarkus-maven-plugin</artifactId>
-                        <version>3.15.1</version>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <version>${surefire-plugin.version}</version>
                         <executions>
                             <execution>
                                 <goals>
-                                    <goal>build</goal>
-                                    <goal>dev</goal>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
                                 </goals>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-
         </profile>
     </profiles>
 </project>
